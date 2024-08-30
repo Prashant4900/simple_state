@@ -14,7 +14,7 @@ class SimpleState<T> {
       : _value = initialState,
         _controller = StreamController<T>.broadcast() {
     /// Set the onCancel callback to properly dispose of the controller.
-    _controller.onCancel = _dispose;
+    _controller.onCancel = dispose;
   }
 
   /// The current value of the state.
@@ -50,7 +50,7 @@ class SimpleState<T> {
   ///
   /// This method is called when the stream controller is canceled. It ensures
   /// that the stream controller is closed and no longer used.
-  void _dispose() {
+  void dispose() {
     if (!_controller.isClosed) {
       _controller.close();
     }

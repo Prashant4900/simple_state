@@ -1,19 +1,44 @@
 import 'dart:async';
 
+/// A simple state management class that holds a value and provides a stream for updates.
+///
+/// This class allows you to manage a single piece of state and notify listeners
+/// about changes to that state via a stream. It also provides a mechanism to
+/// update the state and automatically notify all listeners.
 class SimpleState<T> {
+  /// Creates a [SimpleState] with the given initial state.
+  ///
+  /// The initial state is used to set the initial value of the state and is
+  /// provided to the stream controller to emit the initial value.
   SimpleState(T initialState)
       : _value = initialState,
         _controller = StreamController<T>.broadcast() {
+    /// Set the onCancel callback to properly dispose of the controller.
     _controller.onCancel = _dispose;
   }
 
+  /// The current value of the state.
   T _value;
+
+  /// The stream controller used to manage and broadcast state changes.
   final StreamController<T> _controller;
 
+  /// The current value of the state.
+  ///
+  /// This getter allows you to retrieve the current value of the state.
   T get value => _value;
 
+  /// The stream that provides updates to the state.
+  ///
+  /// This getter provides access to the stream of state changes, which can
+  /// be listened to by widgets or other components.
   Stream<T> get stream => _controller.stream;
 
+  /// Sets a new value for the state and notifies listeners.
+  ///
+  /// This setter updates the state value and emits the new value to all
+  /// listeners via the stream. It only updates the value and notifies listeners
+  /// if the new value is different from the current value.
   set value(T newState) {
     if (_value != newState) {
       _value = newState;
@@ -21,84 +46,13 @@ class SimpleState<T> {
     }
   }
 
+  /// Disposes of the stream controller when it is no longer needed.
+  ///
+  /// This method is called when the stream controller is canceled. It ensures
+  /// that the stream controller is closed and no longer used.
   void _dispose() {
     if (!_controller.isClosed) {
       _controller.close();
     }
   }
 }
-
-// class SimpleBuilder<T> extends StatelessWidget {
-//   const SimpleBuilder({
-//     required this.state,
-//     required this.builder,
-//     super.key,
-//   });
-
-//   final SimpleState<T> state;
-//   final Widget Function(BuildContext, T) builder;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<T>(
-//       stream: state.stream,
-//       initialData: state.value,
-//       builder: (context, snapshot) => builder(context, snapshot.data as T),
-//     );
-//   }
-// }
-
-// class CombinedStateBuilder extends StatelessWidget {
-//   const CombinedStateBuilder({
-//     required this.stateStreams,
-//     required this.builder,
-//     super.key,
-//   });
-
-//   final List<Stream<dynamic>> stateStreams;
-//   final Widget Function(BuildContext, List<dynamic>) builder;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<List<dynamic>>(
-//       stream: _combineStreams(stateStreams),
-//       initialData: List<dynamic>.filled(stateStreams.length, null),
-//       builder: (context, snapshot) {
-//         final values = snapshot.data!;
-//         return builder(context, values);
-//       },
-//     );
-//   }
-
-//   Stream<List<dynamic>> _combineStreams(List<Stream<dynamic>> streams) {
-//     return Stream<List<dynamic>>.multi((controller) {
-//       // List to keep track of the latest values from each stream
-//       List<dynamic> latestValues = List<dynamic>.filled(streams.length, null);
-
-//       // Function to update the latest value for a specific stream
-//       void updateValue(int index, dynamic value) {
-//         latestValues[index] = value;
-//         controller.add(List.from(latestValues));
-//       }
-
-//       // List of stream subscriptions
-//       List<StreamSubscription<dynamic>> subscriptions = [];
-
-//       // Subscribe to each stream and update the values accordingly
-//       for (int i = 0; i < streams.length; i++) {
-//         final subscription = streams[i].listen(
-//           (value) => updateValue(i, value),
-//           onError: (error) => controller.addError(error),
-//         );
-//         subscriptions.add(subscription);
-//       }
-
-//       // Handle stream cancellation and dispose
-//       controller.onCancel = () {
-//         for (var subscription in subscriptions) {
-//           subscription.cancel();
-//         }
-//       };
-//     });
-//   }
-// }
